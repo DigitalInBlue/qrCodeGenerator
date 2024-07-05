@@ -1,0 +1,4 @@
+qrcode
+vobject
+logging
+Pillow
