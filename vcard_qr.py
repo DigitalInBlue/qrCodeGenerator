@@ -6,9 +6,9 @@ import logging
 
 logger = logging.getLogger('root')
 
-class VCardQRGenerator(tk.Frame):
+class VCardQRGenerator(ttk.Frame):
     def __init__(self, parent, controller, qr_code_parameters):
-        tk.Frame.__init__(self, parent)
+        ttk.Frame.__init__(self, parent)
         self.qr_code_parameters = qr_code_parameters
         self.controller = controller
 
@@ -19,50 +19,50 @@ class VCardQRGenerator(tk.Frame):
         self.grid_columnconfigure(1, weight=1)
 
         # VCard data entry section
-        frame_vcard = tk.LabelFrame(self, text="VCard Data")
+        frame_vcard = ttk.LabelFrame(self, text="VCard Data")
         frame_vcard.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
         field_options = {"width": 40}
 
         self.fields = {
-            "First Name": tk.Entry(frame_vcard, **field_options),
-            "Last Name": tk.Entry(frame_vcard, **field_options),
-            "Title": tk.Entry(frame_vcard, **field_options),
-            "Organization": tk.Entry(frame_vcard, **field_options),
+            "First Name": ttk.Entry(frame_vcard, **field_options),
+            "Last Name": ttk.Entry(frame_vcard, **field_options),
+            "Title": ttk.Entry(frame_vcard, **field_options),
+            "Organization": ttk.Entry(frame_vcard, **field_options),
             "--------0": None,
-            "Telephone (Work)": tk.Entry(frame_vcard, **field_options),
-            "Telephone (Cell)": tk.Entry(frame_vcard, **field_options),
-            "Telephone (Home)": tk.Entry(frame_vcard, **field_options),
+            "Telephone (Work)": ttk.Entry(frame_vcard, **field_options),
+            "Telephone (Cell)": ttk.Entry(frame_vcard, **field_options),
+            "Telephone (Home)": ttk.Entry(frame_vcard, **field_options),
             "--------1": None,
-            "Email (Work)": tk.Entry(frame_vcard, **field_options),
-            "Email (Personal)": tk.Entry(frame_vcard, **field_options),
+            "Email (Work)": ttk.Entry(frame_vcard, **field_options),
+            "Email (Personal)": ttk.Entry(frame_vcard, **field_options),
             "--------2": None,
-            "URL 1": tk.Entry(frame_vcard, **field_options),
-            "URL 2": tk.Entry(frame_vcard, **field_options),
-            "LinkedIn URL": tk.Entry(frame_vcard, **field_options),
-            "Twitter URL": tk.Entry(frame_vcard, **field_options),
-            "Facebook URL": tk.Entry(frame_vcard, **field_options),
+            "URL 1": ttk.Entry(frame_vcard, **field_options),
+            "URL 2": ttk.Entry(frame_vcard, **field_options),
+            "LinkedIn URL": ttk.Entry(frame_vcard, **field_options),
+            "Twitter URL": ttk.Entry(frame_vcard, **field_options),
+            "Facebook URL": ttk.Entry(frame_vcard, **field_options),
             "--------4": None,
-            "Address (Work)": tk.Entry(frame_vcard, **field_options),
-            "Address (Home)": tk.Entry(frame_vcard, **field_options),
+            "Address (Work)": ttk.Entry(frame_vcard, **field_options),
+            "Address (Home)": ttk.Entry(frame_vcard, **field_options),
             "--------5": None,
-            "Photo URL": tk.Entry(frame_vcard, **field_options),
+            "Photo URL": ttk.Entry(frame_vcard, **field_options),
             "--------6": None,
-            "Note": tk.Entry(frame_vcard, **field_options),
+            "Note": ttk.Entry(frame_vcard, **field_options),
             "--------7": None,
             "Language": ttk.Combobox(frame_vcard, values=["en", "es", "fr", "de", "zh", "ja"], **field_options),
             "Time Zone": ttk.Combobox(frame_vcard, values=["America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Asia/Tokyo"], **field_options),
-            "Birthday": tk.Entry(frame_vcard, **field_options),
+            "Birthday": ttk.Entry(frame_vcard, **field_options),
             "Gender": ttk.Combobox(frame_vcard, values=["M", "F", "O"], **field_options),
         }
 
         for idx, (label_text, entry) in enumerate(self.fields.items()):
             if label_text.startswith("--------") == False:
-                tk.Label(frame_vcard, text=label_text).grid(row=idx, column=0, **label_options)
+                ttk.Label(frame_vcard, text=label_text).grid(row=idx, column=0, **label_options)
                 entry.grid(row=idx, column=1, **grid_options)
                 entry.bind("<KeyRelease>", self.update_data)
             else:
-                separator = tk.Frame(frame_vcard, height=2, bd=1, relief=tk.SUNKEN)
+                separator = ttk.Frame(frame_vcard, height=2, relief=tk.SUNKEN)
                 separator.grid(row=idx, column=0, columnspan=2, pady=10, sticky=tk.EW)
 
     def update_data(self, event=None):

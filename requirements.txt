@@ -3,3 +3,5 @@ vobject
 logging
 Pillow
 cairosvg
+ttkthemes
+ttkbootstrap

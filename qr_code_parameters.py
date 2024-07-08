@@ -41,7 +41,7 @@ class ToolTip:
         self.tooltip = tk.Toplevel(self.widget)
         self.tooltip.wm_overrideredirect(True)
         self.tooltip.wm_geometry(f"+{x}+{y}")
-        label = tk.Label(self.tooltip, text=self.text, background="yellow", relief="solid", borderwidth=1, wraplength=200)
+        label = ttk.Label(self.tooltip, text=self.text, background="yellow", relief="solid", borderwidth=1, wraplength=200)
         label.pack()
 
     def hide_tooltip(self, event):
@@ -51,7 +51,7 @@ class ToolTip:
 
 class QRCodeParameters(tk.LabelFrame):
     def __init__(self, parent):
-        tk.LabelFrame.__init__(self, parent, text="QR Code Parameters")
+        ttk.LabelFrame.__init__(self, parent, text="QR Code Parameters")
 
         self.debounce_job = None
         self.debounce_start_time = None
@@ -64,7 +64,7 @@ class QRCodeParameters(tk.LabelFrame):
         self.parent = parent
         self.data = 'https://johnfarrier.com'
 
-        tk.Label(self, text="Error Correction:").grid(row=current_row, column=0, **label_options)
+        ttk.Label(self, text="Error Correction:").grid(row=current_row, column=0, **label_options)
         self.entry_error_correction = ttk.Combobox(self, values=["L - Low (7%)", "M - Medium (15%)", "Q - Quartile (25%)", "H - High (30%)"])
         self.entry_error_correction.grid(row=current_row, column=1, **grid_options)
         self.entry_error_correction.current(1)
@@ -72,23 +72,23 @@ class QRCodeParameters(tk.LabelFrame):
         ToolTip(self.entry_error_correction, "Error correction level specifies the amount of data correction (L, M, Q, H).")
         current_row += 1
 
-        tk.Label(self, text="Box Size (pixels):").grid(row=current_row, column=0, **label_options)
-        self.entry_box_size = tk.Entry(self)
+        ttk.Label(self, text="Box Size (pixels):").grid(row=current_row, column=0, **label_options)
+        self.entry_box_size = ttk.Entry(self)
         self.entry_box_size.grid(row=current_row, column=1, **grid_options)
         self.entry_box_size.insert(0, "10")
         self.entry_box_size.bind("<KeyRelease>", self.update_preview)
         ToolTip(self.entry_box_size, "Box size specifies the number of pixels for each box in the QR code.")
         current_row += 1
 
-        tk.Label(self, text="Border (boxes):").grid(row=current_row, column=0, **label_options)
-        self.entry_border = tk.Entry(self)
+        ttk.Label(self, text="Border (boxes):").grid(row=current_row, column=0, **label_options)
+        self.entry_border = ttk.Entry(self)
         self.entry_border.grid(row=current_row, column=1, **grid_options)
         self.entry_border.insert(0, "1")
         self.entry_border.bind("<KeyRelease>", self.update_preview)
         ToolTip(self.entry_border, "Border specifies the thickness of the border (in boxes).")
         current_row += 1
 
-        tk.Label(self, text="Module Drawer:").grid(row=current_row, column=0, **label_options)
+        ttk.Label(self, text="Module Drawer:").grid(row=current_row, column=0, **label_options)
         self.entry_module_drawer = ttk.Combobox(self, values=["Square", "Gapped Square", "Circle", "Rounded", "Vertical Bars", "Horizontal Bars"])
         self.entry_module_drawer.grid(row=current_row, column=1, **grid_options)
         self.entry_module_drawer.current(0)
@@ -96,7 +96,7 @@ class QRCodeParameters(tk.LabelFrame):
         ToolTip(self.entry_module_drawer, "Module drawer specifies the shape of the QR code modules.")
         current_row += 1
 
-        # tk.Label(self, text="SVG Method:").grid(row=current_row, column=0, **label_options)
+        # ttk.Label(self, text="SVG Method:").grid(row=current_row, column=0, **label_options)
         # self.svg_method = ttk.Combobox(self, values=["Basic", "Fragment", "Path Image", "Fill Image", "Path Fill Image"])
         # self.svg_method.grid(row=current_row, column=1, **grid_options)
         # self.svg_method.current(0)
@@ -104,7 +104,7 @@ class QRCodeParameters(tk.LabelFrame):
         # ToolTip(self.svg_method, "Controls how the SVG is constructed.")
         # current_row += 1
 
-        tk.Label(self, text="Color Mask:").grid(row=current_row, column=0, **label_options)
+        ttk.Label(self, text="Color Mask:").grid(row=current_row, column=0, **label_options)
         self.entry_color_mask = ttk.Combobox(self, values=["Solid", "Radial Gradient", "Square Gradient", "Horizontal Gradient", "Vertical Gradient"])
         self.entry_color_mask.grid(row=current_row, column=1, **grid_options)
         self.entry_color_mask.current(0)
@@ -117,26 +117,26 @@ class QRCodeParameters(tk.LabelFrame):
         self.color_accent_2 = "blue"
 
         # Color selection
-        tk.Label(self, text="Background Color:").grid(row=current_row, column=0, **label_options)
-        self.background_color_button = tk.Button(self, text="Select", command=self.select_background_color)
+        ttk.Label(self, text="Background Color:").grid(row=current_row, column=0, **label_options)
+        self.background_color_button = ttk.Button(self, text="Select", command=self.select_background_color)
         self.background_color_button.grid(row=current_row, column=1, **grid_options)
-        self.background_color_swatch = tk.Label(self, background=self.background_color, width=2, height=1)
+        self.background_color_swatch = ttk.Label(self, background=self.background_color, width=2)
         self.background_color_swatch.grid(row=current_row, column=2, **grid_options)
         self.background_color_swatch.bind("<KeyRelease>", self.update_preview)
         current_row += 1
 
-        tk.Label(self, text="Color Accent 1:").grid(row=current_row, column=0, **label_options)
-        self.color_accent_1_button = tk.Button(self, text="Select", command=self.select_color_accent_1)
+        ttk.Label(self, text="Color Accent 1:").grid(row=current_row, column=0, **label_options)
+        self.color_accent_1_button = ttk.Button(self, text="Select", command=self.select_color_accent_1)
         self.color_accent_1_button.grid(row=current_row, column=1, **grid_options)
-        self.color_accent_1_swatch = tk.Label(self, background=self.color_accent_1, width=2, height=1)
+        self.color_accent_1_swatch = ttk.Label(self, background=self.color_accent_1, width=2)
         self.color_accent_1_swatch.grid(row=current_row, column=2, **grid_options)
         self.color_accent_1_swatch.bind("<KeyRelease>", self.update_preview)
         current_row += 1
 
-        tk.Label(self, text="Color Accent 2:").grid(row=current_row, column=0, **label_options)
-        self.color_accent_2_button = tk.Button(self, text="Select", command=self.select_color_accent_2)
+        ttk.Label(self, text="Color Accent 2:").grid(row=current_row, column=0, **label_options)
+        self.color_accent_2_button = ttk.Button(self, text="Select", command=self.select_color_accent_2)
         self.color_accent_2_button.grid(row=current_row, column=1, **grid_options)
-        self.color_accent_2_swatch = tk.Label(self, background=self.color_accent_2, width=2, height=1)
+        self.color_accent_2_swatch = ttk.Label(self, background=self.color_accent_2, width=2)
         self.color_accent_2_swatch.grid(row=current_row, column=2, **grid_options)
         self.color_accent_2_swatch.bind("<KeyRelease>", self.update_preview)
         current_row += 1
@@ -154,7 +154,7 @@ class QRCodeParameters(tk.LabelFrame):
         current_row += 1
 
         # Button to save the SVG file
-        self.write_svg_button = tk.Button(self, text="Export QR Code", command=self.write)
+        self.write_svg_button = ttk.Button(self, text="Export QR Code", command=self.write)
         self.write_svg_button.grid(row=current_row, column=2, columnspan=1, **grid_options)
         current_row += 1
 
