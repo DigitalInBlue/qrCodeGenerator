@@ -3,6 +3,8 @@ from tkinter import ttk
 from vcard_qr import VCardQRGenerator
 from wifi_qr import WiFiQRGenerator
 from url_qr import URLQRGenerator
+from email_qr import EmailQRGenerator
+from sms_qr import SMSQRGenerator
 from qr_code_parameters import QRCodeParameters
 import logging
 import ttkbootstrap as ttk
@@ -36,7 +38,7 @@ class QRCodeGeneratorApp(ttk.Window):
         # Dropdown menu to select QR code type at the top of the left column
         self.qr_type = tk.StringVar()
         qr_type_menu = ttk.Combobox(left_frame, textvariable=self.qr_type)
-        qr_type_menu['values'] = ('vCard', 'WiFi', 'URL')
+        qr_type_menu['values'] = ('vCard', 'WiFi', 'URL', 'EMail', 'SMS')
         qr_type_menu.grid(row=0, column=0, sticky=tk.EW, padx=10, pady=10)
         qr_type_menu.current(0)
         qr_type_menu.bind("<<ComboboxSelected>>", self.update_qr_parameters)
@@ -51,7 +53,7 @@ class QRCodeGeneratorApp(ttk.Window):
 
         # Define frames for different QR code types
         self.frames = {}
-        for F in (VCardQRGenerator, WiFiQRGenerator, URLQRGenerator):
+        for F in (VCardQRGenerator, WiFiQRGenerator, URLQRGenerator, EmailQRGenerator, SMSQRGenerator):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self, qr_code_parameters=self.qr_code_parameters)
             self.frames[page_name] = frame
@@ -73,6 +75,10 @@ class QRCodeGeneratorApp(ttk.Window):
             self.show_frame("WiFiQRGenerator")
         elif selected_type == 'URL':
             self.show_frame("URLQRGenerator")
+        elif selected_type == 'EMail':
+            self.show_frame("EmailQRGenerator")
+        elif selected_type == 'SMS':
+            self.show_frame("SMSQRGenerator")
         self.qr_code_parameters.update_preview()
 
 if __name__ == "__main__":

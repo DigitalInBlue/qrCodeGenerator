@@ -41,7 +41,7 @@ class ToolTip:
         self.tooltip = tk.Toplevel(self.widget)
         self.tooltip.wm_overrideredirect(True)
         self.tooltip.wm_geometry(f"+{x}+{y}")
-        label = ttk.Label(self.tooltip, text=self.text, background="yellow", relief="solid", borderwidth=1, wraplength=200)
+        label = ttk.Label(self.tooltip, text=self.text, background="orange", relief="solid", foreground="black", borderwidth=1, wraplength=200, padding=(5, 2))
         label.pack()
 
     def hide_tooltip(self, event):
@@ -232,7 +232,7 @@ class QRCodeParameters(tk.LabelFrame):
 
     def update_data(self, new_data):
         self.data = new_data
-        logger.info(f"Data updated: {self.data}")
+        #logger.info(f"Data updated: {self.data}")
         self.update_preview()
 
     def update_preview(self, event=None):
