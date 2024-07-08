@@ -2,3 +2,4 @@ qrcode
 vobject
 logging
 Pillow
+cairosvg

@@ -1,10 +1,29 @@
 import tkinter as tk
 from tkinter import ttk, colorchooser, filedialog
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageColor
 import qrcode
+import qrcode.image.svg
+from qrcode.image.styledpil import StyledPilImage
+from qrcode.image.styles.moduledrawers.pil import RoundedModuleDrawer, SquareModuleDrawer, CircleModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer, GappedSquareModuleDrawer
+from qrcode.image.styles.colormasks import SolidFillColorMask, RadialGradiantColorMask, SquareGradiantColorMask, HorizontalGradiantColorMask, VerticalGradiantColorMask, ImageColorMask
 import logging
 
 logger = logging.getLogger('root')
+
+def color_to_rgb(color):
+    """
+    Convert a color label or hex value to an RGB tuple.
+
+    :param color: A string representing the color label (e.g., "black") or hex value (e.g., "#6dd380").
+    :return: A tuple (R, G, B).
+    """
+    try:
+        # Convert the color to RGB using PIL's ImageColor module
+        rgb = ImageColor.getrgb(color)
+        return rgb
+    except ValueError as e:
+        print(f"Invalid color: {color}. Error: {e}")
+        return None
 
 class ToolTip:
     def __init__(self, widget, text):
@@ -34,6 +53,7 @@ class QRCodeParameters(tk.LabelFrame):
         tk.LabelFrame.__init__(self, parent, text="QR Code Parameters")
 
         current_row = 0
+        pad_options = {"padx": 5, "pady": 5}
         grid_options = {"sticky": tk.EW, "padx": 5, "pady": 5}
         label_options = {"sticky": tk.E, "padx": 5, "pady": 5}
 
@@ -48,7 +68,7 @@ class QRCodeParameters(tk.LabelFrame):
         ToolTip(self.entry_error_correction, "Error correction level specifies the amount of data correction (L, M, Q, H).")
         current_row += 1
 
-        tk.Label(self, text="Box Size:").grid(row=current_row, column=0, **label_options)
+        tk.Label(self, text="Box Size (pixels):").grid(row=current_row, column=0, **label_options)
         self.entry_box_size = tk.Entry(self)
         self.entry_box_size.grid(row=current_row, column=1, **grid_options)
         self.entry_box_size.insert(0, "10")
@@ -56,7 +76,7 @@ class QRCodeParameters(tk.LabelFrame):
         ToolTip(self.entry_box_size, "Box size specifies the number of pixels for each box in the QR code.")
         current_row += 1
 
-        tk.Label(self, text="Border:").grid(row=current_row, column=0, **label_options)
+        tk.Label(self, text="Border (boxes):").grid(row=current_row, column=0, **label_options)
         self.entry_border = tk.Entry(self)
         self.entry_border.grid(row=current_row, column=1, **grid_options)
         self.entry_border.insert(0, "4")
@@ -65,72 +85,78 @@ class QRCodeParameters(tk.LabelFrame):
         current_row += 1
 
         tk.Label(self, text="Module Drawer:").grid(row=current_row, column=0, **label_options)
-        self.entry_module_drawer = ttk.Combobox(self, values=["Square", "GappedSquare", "Circle"])
+        self.entry_module_drawer = ttk.Combobox(self, values=["Square", "Gapped Square", "Circle", "Rounded", "Vertical Bars", "Horizontal Bars"])
         self.entry_module_drawer.grid(row=current_row, column=1, **grid_options)
         self.entry_module_drawer.current(0)
         self.entry_module_drawer.bind("<<ComboboxSelected>>", self.update_preview)
         ToolTip(self.entry_module_drawer, "Module drawer specifies the shape of the QR code modules.")
         current_row += 1
 
+        # tk.Label(self, text="SVG Method:").grid(row=current_row, column=0, **label_options)
+        # self.svg_method = ttk.Combobox(self, values=["Basic", "Fragment", "Path Image", "Fill Image", "Path Fill Image"])
+        # self.svg_method.grid(row=current_row, column=1, **grid_options)
+        # self.svg_method.current(0)
+        # self.svg_method.bind("<<ComboboxSelected>>", self.update_preview)
+        # ToolTip(self.svg_method, "Controls how the SVG is constructed.")
+        # current_row += 1
+
         tk.Label(self, text="Color Mask:").grid(row=current_row, column=0, **label_options)
-        self.entry_color_mask = ttk.Combobox(self, values=["Solid", "RadialGradient", "SquareGradient", "HorizontalGradient"])
+        self.entry_color_mask = ttk.Combobox(self, values=["Solid", "Radial Gradient", "Square Gradient", "Horizontal Gradient", "Vertical Gradient"])
         self.entry_color_mask.grid(row=current_row, column=1, **grid_options)
         self.entry_color_mask.current(0)
         self.entry_color_mask.bind("<<ComboboxSelected>>", self.update_preview)
         ToolTip(self.entry_color_mask, "Color mask specifies the color filling method for the QR code.")
         current_row += 1
 
-        # Color selection
-        tk.Label(self, text="Fill Color:").grid(row=current_row, column=0, **label_options)
-        self.fill_color_button = tk.Button(self, text="Select Fill Color", command=self.select_fill_color)
-        self.fill_color_button.grid(row=current_row, column=1, **grid_options)
-        self.fill_color_swatch = tk.Label(self, background="black", width=2, height=1)
-        self.fill_color_swatch.grid(row=current_row, column=2, **grid_options)
-        self.fill_color_swatch.bind("<KeyRelease>", self.update_preview)
-        current_row += 1
+        self.background_color = "white"
+        self.color_accent_1 = "red"
+        self.color_accent_2 = "blue"
 
+        # Color selection
         tk.Label(self, text="Background Color:").grid(row=current_row, column=0, **label_options)
-        self.background_color_button = tk.Button(self, text="Select Background Color", command=self.select_background_color)
+        self.background_color_button = tk.Button(self, text="Select", command=self.select_background_color)
         self.background_color_button.grid(row=current_row, column=1, **grid_options)
-        self.background_color_swatch = tk.Label(self, background="white", width=2, height=1)
+        self.background_color_swatch = tk.Label(self, background=self.background_color, width=2, height=1)
         self.background_color_swatch.grid(row=current_row, column=2, **grid_options)
         self.background_color_swatch.bind("<KeyRelease>", self.update_preview)
         current_row += 1
 
-        self.fill_color = "black"
-        self.background_color = "white"
-
-        # Logo image selection
-        tk.Label(self, text="Logo Image:").grid(row=current_row, column=0, **label_options)
-        self.logo_image_button = tk.Button(self, text="Select Logo Image", command=self.select_logo_image)
-        self.logo_image_button.grid(row=current_row, column=1, **grid_options)
-        self.logo_image_label = tk.Label(self, text="No image selected")
-        self.logo_image_label.grid(row=current_row, column=2, **grid_options)
-        self.logo_image_label.bind("<KeyRelease>", self.update_preview)
+        tk.Label(self, text="Color Accent 1:").grid(row=current_row, column=0, **label_options)
+        self.color_accent_1_button = tk.Button(self, text="Select", command=self.select_color_accent_1)
+        self.color_accent_1_button.grid(row=current_row, column=1, **grid_options)
+        self.color_accent_1_swatch = tk.Label(self, background=self.color_accent_1, width=2, height=1)
+        self.color_accent_1_swatch.grid(row=current_row, column=2, **grid_options)
+        self.color_accent_1_swatch.bind("<KeyRelease>", self.update_preview)
         current_row += 1
 
-        self.logo_image_path = None
+        tk.Label(self, text="Color Accent 2:").grid(row=current_row, column=0, **label_options)
+        self.color_accent_2_button = tk.Button(self, text="Select", command=self.select_color_accent_2)
+        self.color_accent_2_button.grid(row=current_row, column=1, **grid_options)
+        self.color_accent_2_swatch = tk.Label(self, background=self.color_accent_2, width=2, height=1)
+        self.color_accent_2_swatch.grid(row=current_row, column=2, **grid_options)
+        self.color_accent_2_swatch.bind("<KeyRelease>", self.update_preview)
+        current_row += 1
 
         # QR Code preview
-        self.preview_label = tk.Label(self, text="QR Code Preview:")
-        self.preview_label.grid(row=current_row, sticky=tk.W, column=0, columnspan=3)
-        current_row += 1
-
         self.update_preview_button = tk.Button(self, text="Update Preview", command=self.update_preview)
         self.update_preview_button.grid(row=current_row, column=0, columnspan=1)
         self.preview_canvas = tk.Canvas(self, width=200, height=200, bg="white", bd=2)
-        self.preview_canvas.grid(row=current_row, column=1, columnspan=2)
+        self.preview_canvas.grid(row=current_row, column=1, columnspan=2, **pad_options)
         current_row += 1
 
-        # Base file name entry
-        tk.Label(self, text="Base File Name:").grid(row=current_row, column=0, sticky=tk.E)
-        self.entry_base_name = tk.Entry(self)
-        self.entry_base_name.grid(row=current_row, column=1, **grid_options)
+        # Button to save the SVG file
+        self.write_svg_button = tk.Button(self, text="Export QR Code", command=self.write)
+        self.write_svg_button.grid(row=current_row, column=2, columnspan=1, **grid_options)
         current_row += 1
 
-    def select_fill_color(self):
-        self.fill_color = colorchooser.askcolor(title="Choose Fill Color")[1] or self.fill_color
-        self.fill_color_swatch.config(background=self.fill_color)
+    def select_color_accent_1(self):
+        self.color_accent_1 = colorchooser.askcolor(title="Choose Color")[1] or self.color_accent_1
+        self.color_accent_1_swatch.config(background=self.color_accent_1)
+        self.update_preview()
+
+    def select_color_accent_2(self):
+        self.color_accent_2 = colorchooser.askcolor(title="Choose Color")[1] or self.color_accent_2
+        self.color_accent_2_swatch.config(background=self.color_accent_2)
         self.update_preview()
 
     def select_background_color(self):
@@ -146,40 +172,75 @@ class QRCodeParameters(tk.LabelFrame):
             self.logo_image_label.config(text="No image selected")
         self.update_preview()
 
-    def update_data(self, new_data):
-        self.data = new_data
-        logger.info(f'Data: "{self.data}"')
+    def select_background_image(self):
+        self.background_image_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
+        if self.background_image_path:
+            self.background_image_label.config(text=self.background_image_path.split("/")[-1])
+        else:
+            self.background_image_label.config(text="No image selected")
         self.update_preview()
 
-    def update_preview(self, event=None):
-        # Get the dimensions of the canvas
-        canvas_width = self.preview_canvas.winfo_width()
-        canvas_height = self.preview_canvas.winfo_height()
-
+    def generate_qr_code(self):
         qr = qrcode.QRCode(
-            #version=1,
+            version=self.get_minimum_qr_version(self.data),
             error_correction=self.get_error_correction(self.entry_error_correction.get().split()[0]),
             box_size=int(self.entry_box_size.get()),
             border=int(self.entry_border.get()),
         )
+
         qr.add_data(self.data)
         qr.make(fit=True)
 
+        # Select the module drawer based on user selection
+        module_drawer_option = self.entry_module_drawer.get()
+        module_drawer = {
+            "Square": SquareModuleDrawer(),
+            "Gapped Square": GappedSquareModuleDrawer(),
+            "Circle": CircleModuleDrawer(),
+            "Rounded": RoundedModuleDrawer(),
+            "Vertical Bars": VerticalBarsDrawer(),
+            "Horizontal Bars": HorizontalBarsDrawer(),
+        }.get(module_drawer_option, SquareModuleDrawer())
+
+        # Select color mask
+        color_mask_option = self.entry_color_mask.get()
+        color_mask = {
+            "Solid": SolidFillColorMask(back_color=color_to_rgb(self.background_color)),
+            "Radial Gradient": RadialGradiantColorMask(back_color=color_to_rgb(self.background_color), center_color=color_to_rgb(self.color_accent_1), edge_color=color_to_rgb(self.color_accent_2)),
+            "Square Gradient": SquareGradiantColorMask(back_color=color_to_rgb(self.background_color), center_color=color_to_rgb(self.color_accent_1), edge_color=color_to_rgb(self.color_accent_2)),
+            "Horizontal Gradient": HorizontalGradiantColorMask(back_color=color_to_rgb(self.background_color), left_color=color_to_rgb(self.color_accent_1), right_color=color_to_rgb(self.color_accent_2)),
+            "Vertical Gradient": VerticalGradiantColorMask(back_color=color_to_rgb(self.background_color), top_color=color_to_rgb(self.color_accent_1), bottom_color=color_to_rgb(self.color_accent_2)),
+        }.get(color_mask_option, None)
+
+        # Create the image
         img = qr.make_image(
-            fill_color=self.fill_color,
-            back_color=self.background_color
+            image_factory=StyledPilImage,
+            module_drawer=module_drawer,
+            color_mask=color_mask
         ).convert("RGBA")
 
-        # Resize the image to fit the canvas while maintaining aspect ratio
-        img.thumbnail((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+        return img
 
-        if self.logo_image_path:
-            logo = Image.open(self.logo_image_path)
-            logo = logo.resize((50, 50), Image.Resampling.LANCZOS)
-            img.paste(logo, (int((img.size[0] - logo.size[0]) / 2), int((img.size[1] - logo.size[1]) / 2)), logo)
+    def update_data(self, new_data):
+        self.data = new_data
+        self.update_preview()
+
+    def update_preview(self, event=None):
+        canvas_width = self.preview_canvas.winfo_width()
+        canvas_height = self.preview_canvas.winfo_height()
+
+        img = self.generate_qr_code()
+        img.thumbnail((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
         self.qr_preview_image = ImageTk.PhotoImage(img)
         self.preview_canvas.create_image(canvas_width // 2, canvas_height // 2, image=self.qr_preview_image)
+
+    def write(self):
+        img = self.generate_qr_code()
+
+        file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
+        if file_path:
+            img.save(file_path)
 
     def get_error_correction(self, level):
         error_correction_map = {

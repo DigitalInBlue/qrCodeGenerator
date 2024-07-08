@@ -22,87 +22,81 @@ class VCardQRGenerator(tk.Frame):
         frame_vcard = tk.LabelFrame(self, text="VCard Data")
         frame_vcard.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
-        tk.Label(frame_vcard, text="First Name:").grid(row=0, column=0, **label_options)
-        self.entry_fn = tk.Entry(frame_vcard)
-        self.entry_fn.grid(row=0, column=1, **grid_options)
-        self.entry_fn.bind("<KeyRelease>", self.update_data)
+        self.fields = {
+            "First Name": tk.Entry(frame_vcard),
+            "Last Name": tk.Entry(frame_vcard),
+            "Telephone": tk.Entry(frame_vcard),
+            "Email": tk.Entry(frame_vcard),
+            "URL 1": tk.Entry(frame_vcard),
+            "URL 2": tk.Entry(frame_vcard),
+            "LinkedIn": tk.Entry(frame_vcard),
+            "Organization": tk.Entry(frame_vcard),
+            "Title": tk.Entry(frame_vcard),
+            "Photo URL": tk.Entry(frame_vcard),
+            "Note": tk.Entry(frame_vcard),
+            "Language": tk.Entry(frame_vcard),
+            "Time Zone": tk.Entry(frame_vcard)
+        }
 
-        tk.Label(frame_vcard, text="Last Name:").grid(row=1, column=0, **label_options)
-        self.entry_ln = tk.Entry(frame_vcard)
-        self.entry_ln.grid(row=1, column=1, **grid_options)
-        self.entry_ln.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Telephone:").grid(row=2, column=0, **label_options)
-        self.entry_tel = tk.Entry(frame_vcard)
-        self.entry_tel.grid(row=2, column=1, **grid_options)
-        self.entry_tel.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Email:").grid(row=3, column=0, **label_options)
-        self.entry_email = tk.Entry(frame_vcard)
-        self.entry_email.grid(row=3, column=1, **grid_options)
-        self.entry_email.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="URL 1:").grid(row=4, column=0, **label_options)
-        self.entry_url = tk.Entry(frame_vcard)
-        self.entry_url.grid(row=4, column=1, **grid_options)
-        self.entry_url.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="URL 2:").grid(row=5, column=0, **label_options)
-        self.entry_url2 = tk.Entry(frame_vcard)
-        self.entry_url2.grid(row=5, column=1, **grid_options)
-        self.entry_url2.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="LinkedIn:").grid(row=6, column=0, **label_options)
-        self.entry_social = tk.Entry(frame_vcard)
-        self.entry_social.grid(row=6, column=1, **grid_options)
-        self.entry_social.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Organization:").grid(row=7, column=0, **label_options)
-        self.entry_org = tk.Entry(frame_vcard)
-        self.entry_org.grid(row=7, column=1, **grid_options)
-        self.entry_org.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Title:").grid(row=8, column=0, **label_options)
-        self.entry_title = tk.Entry(frame_vcard)
-        self.entry_title.grid(row=8, column=1, **grid_options)
-        self.entry_title.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Photo URL:").grid(row=9, column=0, **label_options)
-        self.entry_photo = tk.Entry(frame_vcard)
-        self.entry_photo.grid(row=9, column=1, **grid_options)
-        self.entry_photo.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Note:").grid(row=10, column=0, **label_options)
-        self.entry_note = tk.Entry(frame_vcard)
-        self.entry_note.grid(row=10, column=1, **grid_options)
-        self.entry_note.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Language:").grid(row=11, column=0, **label_options)
-        self.entry_lang = tk.Entry(frame_vcard)
-        self.entry_lang.grid(row=11, column=1, **grid_options)
-        self.entry_lang.bind("<KeyRelease>", self.update_data)
-
-        tk.Label(frame_vcard, text="Time Zone:").grid(row=12, column=0, **label_options)
-        self.entry_tz = tk.Entry(frame_vcard)
-        self.entry_tz.grid(row=12, column=1, **grid_options)
-        self.entry_tz.bind("<KeyRelease>", self.update_data)
+        for idx, (label_text, entry) in enumerate(self.fields.items()):
+            tk.Label(frame_vcard, text=label_text).grid(row=idx, column=0, **label_options)
+            entry.grid(row=idx, column=1, **grid_options)
+            entry.bind("<KeyRelease>", self.update_data)
 
     def update_data(self, event=None):
-        vcard_data = f"""BEGIN:VCARD
-VERSION:4.0
-FN:{self.entry_fn.get()}
-N:{self.entry_ln.get()};{self.entry_fn.get()};;;
-TEL;TYPE=WORK,VOICE,pref:{self.entry_tel.get()}
-EMAIL:{self.entry_email.get()}
-URL:{self.entry_url.get()}
-URL:{self.entry_url2.get()}
-X-SOCIALPROFILE;type=linkedin:{self.entry_social.get()}
-ORG:{self.entry_org.get()}
-TITLE:{self.entry_title.get()}
-PHOTO;VALUE=uri:{self.entry_photo.get()}
-NOTE:{self.entry_note.get()}
-LANG:{self.entry_lang.get()}
-TZ:{self.entry_tz.get()}
-END:VCARD"""
+        vcard_lines = ["BEGIN:VCARD", "VERSION:4.0"]
+
+        fn = self.fields["First Name"].get()
+        ln = self.fields["Last Name"].get()
+        if fn or ln:
+            vcard_lines.append(f"FN:{fn}")
+            vcard_lines.append(f"N:{ln};{fn};;;")
+
+        tel = self.fields["Telephone"].get()
+        if tel:
+            vcard_lines.append(f"TEL;TYPE=WORK,VOICE,pref:{tel}")
+
+        email = self.fields["Email"].get()
+        if email:
+            vcard_lines.append(f"EMAIL:{email}")
+
+        url = self.fields["URL 1"].get()
+        if url:
+            vcard_lines.append(f"URL:{url}")
+
+        url2 = self.fields["URL 2"].get()
+        if url2:
+            vcard_lines.append(f"URL:{url2}")
+
+        linkedin = self.fields["LinkedIn"].get()
+        if linkedin:
+            vcard_lines.append(f"X-SOCIALPROFILE;type=linkedin:{linkedin}")
+
+        org = self.fields["Organization"].get()
+        if org:
+            vcard_lines.append(f"ORG:{org}")
+
+        title = self.fields["Title"].get()
+        if title:
+            vcard_lines.append(f"TITLE:{title}")
+
+        photo = self.fields["Photo URL"].get()
+        if photo:
+            vcard_lines.append(f"PHOTO;VALUE=uri:{photo}")
+
+        note = self.fields["Note"].get()
+        if note:
+            vcard_lines.append(f"NOTE:{note}")
+
+        lang = self.fields["Language"].get()
+        if lang:
+            vcard_lines.append(f"LANG:{lang}")
+
+        tz = self.fields["Time Zone"].get()
+        if tz:
+            vcard_lines.append(f"TZ:{tz}")
+
+        vcard_lines.append("END:VCARD")
+        vcard_data = "\n".join(vcard_lines)
 
         self.qr_code_parameters.update_data(vcard_data)
