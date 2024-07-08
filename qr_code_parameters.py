@@ -232,6 +232,7 @@ class QRCodeParameters(tk.LabelFrame):
 
     def update_data(self, new_data):
         self.data = new_data
+        logger.info(f"Data updated: {self.data}")
         self.update_preview()
 
     def update_preview(self, event=None):
