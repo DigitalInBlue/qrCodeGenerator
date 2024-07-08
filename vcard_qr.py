@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import ttk, filedialog
 import qrcode
 import vobject
 import logging
@@ -22,26 +22,48 @@ class VCardQRGenerator(tk.Frame):
         frame_vcard = tk.LabelFrame(self, text="VCard Data")
         frame_vcard.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
+        field_options = {"width": 40}
+
         self.fields = {
-            "First Name": tk.Entry(frame_vcard),
-            "Last Name": tk.Entry(frame_vcard),
-            "Telephone": tk.Entry(frame_vcard),
-            "Email": tk.Entry(frame_vcard),
-            "URL 1": tk.Entry(frame_vcard),
-            "URL 2": tk.Entry(frame_vcard),
-            "LinkedIn": tk.Entry(frame_vcard),
-            "Organization": tk.Entry(frame_vcard),
-            "Title": tk.Entry(frame_vcard),
-            "Photo URL": tk.Entry(frame_vcard),
-            "Note": tk.Entry(frame_vcard),
-            "Language": tk.Entry(frame_vcard),
-            "Time Zone": tk.Entry(frame_vcard)
+            "First Name": tk.Entry(frame_vcard, **field_options),
+            "Last Name": tk.Entry(frame_vcard, **field_options),
+            "Title": tk.Entry(frame_vcard, **field_options),
+            "Organization": tk.Entry(frame_vcard, **field_options),
+            "--------0": None,
+            "Telephone (Work)": tk.Entry(frame_vcard, **field_options),
+            "Telephone (Cell)": tk.Entry(frame_vcard, **field_options),
+            "Telephone (Home)": tk.Entry(frame_vcard, **field_options),
+            "--------1": None,
+            "Email (Work)": tk.Entry(frame_vcard, **field_options),
+            "Email (Personal)": tk.Entry(frame_vcard, **field_options),
+            "--------2": None,
+            "URL 1": tk.Entry(frame_vcard, **field_options),
+            "URL 2": tk.Entry(frame_vcard, **field_options),
+            "LinkedIn URL": tk.Entry(frame_vcard, **field_options),
+            "Twitter URL": tk.Entry(frame_vcard, **field_options),
+            "Facebook URL": tk.Entry(frame_vcard, **field_options),
+            "--------4": None,
+            "Address (Work)": tk.Entry(frame_vcard, **field_options),
+            "Address (Home)": tk.Entry(frame_vcard, **field_options),
+            "--------5": None,
+            "Photo URL": tk.Entry(frame_vcard, **field_options),
+            "--------6": None,
+            "Note": tk.Entry(frame_vcard, **field_options),
+            "--------7": None,
+            "Language": ttk.Combobox(frame_vcard, values=["en", "es", "fr", "de", "zh", "ja"], **field_options),
+            "Time Zone": ttk.Combobox(frame_vcard, values=["America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Asia/Tokyo"], **field_options),
+            "Birthday": tk.Entry(frame_vcard, **field_options),
+            "Gender": ttk.Combobox(frame_vcard, values=["M", "F", "O"], **field_options),
         }
 
         for idx, (label_text, entry) in enumerate(self.fields.items()):
-            tk.Label(frame_vcard, text=label_text).grid(row=idx, column=0, **label_options)
-            entry.grid(row=idx, column=1, **grid_options)
-            entry.bind("<KeyRelease>", self.update_data)
+            if label_text.startswith("--------") == False:
+                tk.Label(frame_vcard, text=label_text).grid(row=idx, column=0, **label_options)
+                entry.grid(row=idx, column=1, **grid_options)
+                entry.bind("<KeyRelease>", self.update_data)
+            else:
+                separator = tk.Frame(frame_vcard, height=2, bd=1, relief=tk.SUNKEN)
+                separator.grid(row=idx, column=0, columnspan=2, pady=10, sticky=tk.EW)
 
     def update_data(self, event=None):
         vcard_lines = ["BEGIN:VCARD", "VERSION:4.0"]
@@ -52,25 +74,45 @@ class VCardQRGenerator(tk.Frame):
             vcard_lines.append(f"FN:{fn}")
             vcard_lines.append(f"N:{ln};{fn};;;")
 
-        tel = self.fields["Telephone"].get()
-        if tel:
-            vcard_lines.append(f"TEL;TYPE=WORK,VOICE,pref:{tel}")
+        tel_work = self.fields["Telephone (Work)"].get()
+        if tel_work:
+            vcard_lines.append(f"TEL;TYPE=WORK,VOICE,pref:{tel_work}")
 
-        email = self.fields["Email"].get()
-        if email:
-            vcard_lines.append(f"EMAIL:{email}")
+        tel_home = self.fields["Telephone (Home)"].get()
+        if tel_home:
+            vcard_lines.append(f"TEL;TYPE=HOME,VOICE:{tel_home}")
 
-        url = self.fields["URL 1"].get()
-        if url:
-            vcard_lines.append(f"URL:{url}")
+        tel_cell = self.fields["Telephone (Cell)"].get()
+        if tel_cell:
+            vcard_lines.append(f"TEL;TYPE=CELL,VOICE:{tel_cell}")
+
+        email_personal = self.fields["Email (Personal)"].get()
+        if email_personal:
+            vcard_lines.append(f"EMAIL:{email_personal}")
+
+        email_work = self.fields["Email (Work)"].get()
+        if email_work:
+            vcard_lines.append(f"EMAIL;TYPE=WORK:{email_work}")
+
+        url1 = self.fields["URL 1"].get()
+        if url1:
+            vcard_lines.append(f"URL:{url1}")
 
         url2 = self.fields["URL 2"].get()
         if url2:
             vcard_lines.append(f"URL:{url2}")
 
-        linkedin = self.fields["LinkedIn"].get()
+        linkedin = self.fields["LinkedIn URL"].get()
         if linkedin:
             vcard_lines.append(f"X-SOCIALPROFILE;type=linkedin:{linkedin}")
+
+        twitter = self.fields["Twitter URL"].get()
+        if twitter:
+            vcard_lines.append(f"X-SOCIALPROFILE;type=twitter:{twitter}")
+
+        facebook = self.fields["Facebook URL"].get()
+        if facebook:
+            vcard_lines.append(f"X-SOCIALPROFILE;type=facebook:{facebook}")
 
         org = self.fields["Organization"].get()
         if org:
@@ -95,6 +137,22 @@ class VCardQRGenerator(tk.Frame):
         tz = self.fields["Time Zone"].get()
         if tz:
             vcard_lines.append(f"TZ:{tz}")
+
+        addr_work = self.fields["Address (Work)"].get()
+        if addr_work:
+            vcard_lines.append(f"ADR;TYPE=WORK:{addr_work}")
+
+        addr_home = self.fields["Address (Home)"].get()
+        if addr_home:
+            vcard_lines.append(f"ADR;TYPE=HOME:{addr_home}")
+
+        bday = self.fields["Birthday"].get()
+        if bday:
+            vcard_lines.append(f"BDAY:{bday}")
+
+        gender = self.fields["Gender"].get()
+        if gender:
+            vcard_lines.append(f"GENDER:{gender}")
 
         vcard_lines.append("END:VCARD")
         vcard_data = "\n".join(vcard_lines)

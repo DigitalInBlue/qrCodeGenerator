@@ -7,6 +7,7 @@ from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers.pil import RoundedModuleDrawer, SquareModuleDrawer, CircleModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer, GappedSquareModuleDrawer
 from qrcode.image.styles.colormasks import SolidFillColorMask, RadialGradiantColorMask, SquareGradiantColorMask, HorizontalGradiantColorMask, VerticalGradiantColorMask, ImageColorMask
 import logging
+import time
 
 logger = logging.getLogger('root')
 
@@ -52,6 +53,9 @@ class QRCodeParameters(tk.LabelFrame):
     def __init__(self, parent):
         tk.LabelFrame.__init__(self, parent, text="QR Code Parameters")
 
+        self.debounce_job = None
+        self.debounce_start_time = None
+
         current_row = 0
         pad_options = {"padx": 5, "pady": 5}
         grid_options = {"sticky": tk.EW, "padx": 5, "pady": 5}
@@ -79,7 +83,7 @@ class QRCodeParameters(tk.LabelFrame):
         tk.Label(self, text="Border (boxes):").grid(row=current_row, column=0, **label_options)
         self.entry_border = tk.Entry(self)
         self.entry_border.grid(row=current_row, column=1, **grid_options)
-        self.entry_border.insert(0, "4")
+        self.entry_border.insert(0, "1")
         self.entry_border.bind("<KeyRelease>", self.update_preview)
         ToolTip(self.entry_border, "Border specifies the thickness of the border (in boxes).")
         current_row += 1
@@ -138,10 +142,15 @@ class QRCodeParameters(tk.LabelFrame):
         current_row += 1
 
         # QR Code preview
-        self.update_preview_button = tk.Button(self, text="Update Preview", command=self.update_preview)
-        self.update_preview_button.grid(row=current_row, column=0, columnspan=1)
-        self.preview_canvas = tk.Canvas(self, width=200, height=200, bg="white", bd=2)
-        self.preview_canvas.grid(row=current_row, column=1, columnspan=2, **pad_options)
+        preview_canvas_width = 256
+        preview_canvas_height = 256
+        self.preview_canvas = tk.Canvas(self, width=preview_canvas_width, height=preview_canvas_height, bg="white", bd=2)
+        self.preview_canvas.grid(row=current_row, column=0, columnspan=3, **pad_options)
+
+        # Busy overlay canvas
+        self.busy_canvas = tk.Canvas(self.preview_canvas, width=preview_canvas_width, height=preview_canvas_height, bg="white", bd=0, highlightthickness=0)
+        self.busy_text = self.busy_canvas.create_text(preview_canvas_width/2, preview_canvas_height/2, text="Rendering...", fill="black", font=("Helvetica", 16))
+        self.busy_canvas.pack_forget()
         current_row += 1
 
         # Button to save the SVG file
@@ -226,6 +235,21 @@ class QRCodeParameters(tk.LabelFrame):
         self.update_preview()
 
     def update_preview(self, event=None):
+        if self.debounce_job is not None:
+            self.after_cancel(self.debounce_job)
+
+        # Show the busy canvas
+        current_time = time.time()
+        if self.debounce_start_time is None:
+            self.debounce_start_time = current_time
+
+        if current_time - self.debounce_start_time > 1.3:
+            # Show the busy canvas
+            self.busy_canvas.pack()
+
+        self.debounce_job = self.after(300, self._do_update_preview)
+
+    def _do_update_preview(self, event=None):
         canvas_width = self.preview_canvas.winfo_width()
         canvas_height = self.preview_canvas.winfo_height()
 
@@ -234,6 +258,12 @@ class QRCodeParameters(tk.LabelFrame):
 
         self.qr_preview_image = ImageTk.PhotoImage(img)
         self.preview_canvas.create_image(canvas_width // 2, canvas_height // 2, image=self.qr_preview_image)
+
+        # Hide the busy canvas
+        self.busy_canvas.pack_forget()
+
+        self.debounce_job = None
+        self.debounce_start_time = None  # Reset the debounce start time
 
     def write(self):
         img = self.generate_qr_code()
@@ -257,7 +287,7 @@ class QRCodeParameters(tk.LabelFrame):
                 version=version,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
                 box_size=10,
-                border=4
+                border=1
             )
             try:
                 qr.add_data(data)

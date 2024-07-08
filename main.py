@@ -61,12 +61,6 @@ class QRCodeGeneratorApp(tk.Tk):
         frame.tkraise()
 
     def update_qr_parameters(self, event=None):
-        selected_type = self.qr_type.get()
-        if selected_type == 'VCard':
-            self.qr_code_parameters.entry_version['values'] = [str(i) for i in range(1, 41)]
-            self.qr_code_parameters.entry_error_correction['values'] = ["L - Low (7%)", "M - Medium (15%)", "Q - Quartile (25%)", "H - High (30%)"]
-        # Add other conditions for different QR code types here if necessary
-
         self.qr_code_parameters.update_preview()
 
 if __name__ == "__main__":
