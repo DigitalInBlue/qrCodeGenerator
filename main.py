@@ -20,12 +20,19 @@ class QRCodeGeneratorApp(ttk.Window):
 
         self.title("QR Code Generator")
 
+        # Set the application icon
+        icon = tk.PhotoImage(file="icon.png")
+        self.iconphoto(False, icon)
+
         grid_options = {"sticky": tk.W, "padx": 5, "pady": 5}
         label_options = {"sticky": tk.E, "padx": 5, "pady": 5}
 
         # Container for layout
         main_frame = ttk.Frame(self)
         main_frame.pack(fill="both", expand=True)
+
+        # Make the window non-resizable
+        self.resizable(False, False)
 
         # Left column frame
         left_frame = ttk.Frame(main_frame)
