@@ -154,8 +154,8 @@ class QRCodeParameters(tk.LabelFrame):
         current_row += 1
 
         # Button to save the SVG file
-        self.write_svg_button = ttk.Button(self, text="Export QR Code", command=self.write)
-        self.write_svg_button.grid(row=current_row, column=2, columnspan=1, **grid_options)
+        self.export_png_button  = ttk.Button(self, text="Export PNG", command=self.export_png)
+        self.export_png_button.grid(row=current_row, column=2, columnspan=1, **grid_options)
         current_row += 1
 
     def select_color_accent_1(self):
@@ -266,7 +266,7 @@ class QRCodeParameters(tk.LabelFrame):
         self.debounce_job = None
         self.debounce_start_time = None  # Reset the debounce start time
 
-    def write(self):
+    def export_png(self):
         img = self.generate_qr_code()
 
         file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
