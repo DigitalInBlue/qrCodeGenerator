@@ -37,8 +37,8 @@ class VCardQRGenerator(ttk.Frame):
             "Email (Work)": ttk.Entry(frame_vcard, **field_options),
             "Email (Personal)": ttk.Entry(frame_vcard, **field_options),
             "--------2": None,
-            "URL 1": ttk.Entry(frame_vcard, **field_options),
-            "URL 2": ttk.Entry(frame_vcard, **field_options),
+            "Work URL": ttk.Entry(frame_vcard, **field_options),
+            "Home URL": ttk.Entry(frame_vcard, **field_options),
             "LinkedIn URL": ttk.Entry(frame_vcard, **field_options),
             "Twitter URL": ttk.Entry(frame_vcard, **field_options),
             "Facebook URL": ttk.Entry(frame_vcard, **field_options),
@@ -94,13 +94,13 @@ class VCardQRGenerator(ttk.Frame):
         if email_work:
             vcard_lines.append(f"EMAIL;TYPE=WORK:{email_work}")
 
-        url1 = self.fields["URL 1"].get()
+        url1 = self.fields["Work URL"].get()
         if url1:
-            vcard_lines.append(f"URL:{url1}")
+            vcard_lines.append(f"URL;type=WORK:{url1}")
 
-        url2 = self.fields["URL 2"].get()
+        url2 = self.fields["Home URL"].get()
         if url2:
-            vcard_lines.append(f"URL:{url2}")
+            vcard_lines.append(f"URL;type=HOME:{url2}")
 
         linkedin = self.fields["LinkedIn URL"].get()
         if linkedin:
