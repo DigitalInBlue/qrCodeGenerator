@@ -8,6 +8,7 @@ from qrcode.image.styles.moduledrawers.pil import RoundedModuleDrawer, SquareMod
 from qrcode.image.styles.colormasks import SolidFillColorMask, RadialGradiantColorMask, SquareGradiantColorMask, HorizontalGradiantColorMask, VerticalGradiantColorMask, ImageColorMask
 import logging
 import time
+import xml.etree.ElementTree as ET
 
 logger = logging.getLogger('root')
 
@@ -154,6 +155,9 @@ class QRCodeParameters(tk.LabelFrame):
         current_row += 1
 
         # Button to save the SVG file
+        self.export_svg_button  = ttk.Button(self, text="Export SVG", command=self.export_svg)
+        self.export_svg_button.grid(row=current_row, column=0, columnspan=1, **grid_options)
+
         self.export_png_button  = ttk.Button(self, text="Export PNG", command=self.export_png)
         self.export_png_button.grid(row=current_row, column=2, columnspan=1, **grid_options)
         current_row += 1
@@ -272,6 +276,29 @@ class QRCodeParameters(tk.LabelFrame):
         file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
         if file_path:
             img.save(file_path)
+
+    def export_svg(self):
+        qr = qrcode.QRCode(
+            version=self.get_minimum_qr_version(self.data),
+            error_correction=self.get_error_correction(self.entry_error_correction.get().split()[0]),
+            box_size=int(self.entry_box_size.get()),
+            border=int(self.entry_border.get()),
+        )
+
+        qr.add_data(self.data)
+        qr.make(fit=True)
+
+        # Create the SVG image
+        img = qr.make_image(image_factory=qrcode.image.svg.SvgImage)
+
+        file_path = filedialog.asksaveasfilename(defaultextension=".svg", filetypes=[("SVG files", "*.svg")])
+        if file_path:
+            # Create an ElementTree object
+            svg_tree = ET.ElementTree(img._img)
+
+            # Write to file with proper encoding
+            with open(file_path, "wb") as f:
+                svg_tree.write(f, encoding="utf-8", xml_declaration=True)
 
     def get_error_correction(self, level):
         error_correction_map = {
