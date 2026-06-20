@@ -163,3 +163,7 @@ cython_debug/
 
 *.svg
 *.vcf
+
+JohnFarrierVCard.png
+
+JohnFarrierVCardTest.png
